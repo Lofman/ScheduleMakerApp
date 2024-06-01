@@ -17,7 +17,7 @@ function App() {
 	try {
 		json = JSON.parse(data);
 	} catch {
-		json = {people: {}}
+		json = {columns: {}}
 	}
 
 	useEffect(() => {
@@ -46,20 +46,20 @@ function App() {
 
 	const onAddActivity = (activity) => {
 		console.log(activity)
-		if (!json.people[activity.person].activites) {
-			json.people[activity.person].activites = [];
+		if (!json.columns[activity.column].activites) {
+			json.columns[activity.column].activites = [];
 		}
-		json.people[activity.person].activites.push({name: activity.name, timeStart: activity.timeStart, timeEnd: activity.timeEnd, id: uuidv4()});
+		json.columns[activity.column].activites.push({name: activity.name, timeStart: activity.timeStart, timeEnd: activity.timeEnd, id: uuidv4()});
 		let dataString = JSON.stringify(json);
 
 		saveData(json);
 	}
 
-	const addPerson = (e) => {
-		if (!json.people) {
-			json.people = {};
+	const addColumn = (e) => {
+		if (!json.columns) {
+			json.columns = {};
 		}
-		json.people[uuidv4()] = {name: name};
+		json.columns[uuidv4()] = {name: name};
 		saveData(json);
 	}
 	
@@ -69,10 +69,10 @@ function App() {
 				<div className="do-not-print">
 					<textarea onChange={onDataChange} value={data} style={{width: "100%", height: "20rem", resize: "vertical"}} className="" />
 					<fieldset>
-						<legend>Add Person:</legend>
-						<input type="text" onChange={(e) => setName(e.target.value)} /><button onClick={addPerson}>Add</button>
+						<legend>Add Column:</legend>
+						<input type="text" onChange={(e) => setName(e.target.value)} /><button onClick={addColumn}>Add</button>
 					</fieldset>
-					<AddActivity onAdd={onAddActivity} people={json.people} />
+					<AddActivity onAdd={onAddActivity} columns={json.columns} />
 				</div>
 				<Schedule data={json} />
 			</div>
@@ -80,8 +80,8 @@ function App() {
 	)
 }
 
-function AddActivity({onAdd, people}) {
-	const person = useRef();
+function AddActivity({onAdd, columns}) {
+	const column = useRef();
 	const timeStart = useRef();
 	const timeEnd = useRef();
 	const activityName = useRef();
@@ -89,13 +89,13 @@ function AddActivity({onAdd, people}) {
 	return (
 		<fieldset style={{display: "flex", gap: "1rem"}}>
 			<legend>Add timeslot:</legend>
-			<select ref={person}>
-				{Object.keys(people).map((id, key) => <option key={key} value={id}>{people[id].name}</option>)}
+			<select ref={column}>
+				{Object.keys(columns).map((id, key) => <option key={key} value={id}>{columns[id].name}</option>)}
 			</select>
 			<input type="text" ref={activityName} />
 			<input type="time" ref={timeStart} />
 			<input type="time" ref={timeEnd} />
-			<button onClick={() => onAdd({person: person.current.value, timeStart: timeStart.current.value, timeEnd: timeEnd.current.value, name: activityName.current.value})}>Add</button>
+			<button onClick={() => onAdd({column: column.current.value, timeStart: timeStart.current.value, timeEnd: timeEnd.current.value, name: activityName.current.value})}>Add</button>
 		</fieldset>
 	)
 }
@@ -103,7 +103,7 @@ function AddActivity({onAdd, people}) {
 function Schedule({data}) {
 	const [hide, setHide] = useState([]);
 
-	const onTogglePerson = (e) => {
+	const onToggleColumn = (e) => {
 		let id = e.target.value;
 		let newHide = [...hide];
 		
@@ -123,30 +123,30 @@ function Schedule({data}) {
 		<>
 			<div style={{display: "flex", gap: "1rem"}} className="do-not-print">
 				{
-					Object.keys(data?.people).map(
-						person => 
+					Object.keys(data?.columns).map(
+						column => 
 							(
 								<label>
-									{data.people[person].name}
-									<input type="checkbox" value={person} defaultChecked={hide.indexOf(person) < 0 ? true : false} onChange={onTogglePerson}/>
+									{data.columns[column].name}
+									<input type="checkbox" value={column} defaultChecked={hide.indexOf(column) < 0 ? true : false} onChange={onToggleColumn}/>
 								</label>
 							)
 						)
 				}
 			</div>
 			<div style={{display: "flex", flexDirection: "row", gap: "1rem", width: "100%", flexGrow: "1"}}>
-				{Object.keys(data?.people).map(person => (hide.indexOf(person) < 0 ? <ScheduleColumn person={data.people[person]} /> : <></>))}
+				{Object.keys(data?.columns).map(column => (hide.indexOf(column) < 0 ? <ScheduleColumn column={data.columns[column]} /> : <></>))}
 			</div>
 		</>
 	)
 }
 
-function ScheduleColumn({person}) {
+function ScheduleColumn({column}) {
 	return (
 		<div style={{display: "flex", flexDirection: "column", flexGrow: "1"}}>
-			<h3>{person.name}</h3>
+			<h3>{column.name}</h3>
 			<div style={{flexGrow: "1", position: "relative"}}>
-				{person.activites?.map(activity => <ScheduleActivity activity={activity} />)}
+				{column.activites?.map(activity => <ScheduleActivity activity={activity} />)}
 			</div>
 		</div>
 	)
